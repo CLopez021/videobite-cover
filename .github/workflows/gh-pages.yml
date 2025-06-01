@@ -2,22 +2,29 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]        # every commit triggers a redeploy
+    branches: [main]
+
+permissions:
+  contents: write    # grants the GITHUB_TOKEN permission to push commits
+  pages: write       # (optional) allows updating Pages metadata if needed
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Install deps & build the static site
+      # 1. Install dependencies & build the site
       - uses: actions/setup-node@v4
-        with: {node-version: 20}
-      - run: npm ci           # or pnpm i / yarn install
-      - run: npm run build    # creates ./dist  (adjust if Bolt made a /build folder)
+        with:
+          node-version: 20
 
-      # 2. Push the dist folder to the gh-pages branch
+      - run: npm ci
+      - run: npm run build   # Vite will emit files into ./dist by default
+
+      # 2. Push the ./dist folder to gh-pages
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist   # ↖️  same path you built above
+          publish_dir: ./dist
